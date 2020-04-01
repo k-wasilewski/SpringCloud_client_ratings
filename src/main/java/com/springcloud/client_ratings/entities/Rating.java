@@ -3,7 +3,7 @@ package com.springcloud.client_ratings.entities;
 import javax.persistence.*;
 
 @Entity
-@Table(name="ratings")
+@Table(name="ratings", schema = "cloud")
 public class Rating {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
