@@ -11,10 +11,17 @@ public class Rating {
     private long bookId;
     private int stars;
 
+    public Rating() {}
+
+    public Rating(long bookId, int stars) {
+        this.bookId=bookId;
+        this.stars=stars;
+    }
+
     public long getId() {return this.id;}
     public void setId(long id) {this.id=id;}
     public long getBookId() {return this.bookId;}
     public void setbookId(long bookId) {this.bookId=bookId;}
-    public int getstars() {return this.stars;}
-    public void setstars(int stars) {this.stars=stars;}
+    public int getStars() {return this.stars;}
+    public void setStars(int stars) {this.stars=stars;}
 }

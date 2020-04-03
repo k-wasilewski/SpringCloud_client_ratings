@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.web.bind.annotation.*;
 
+import java.awt.print.Book;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +25,11 @@ public class RatingController {
             return ratingService.findAllRatings();
           }
        return ratingService.findRatingsByBookId(bookId);
+    }
+
+    @GetMapping("/{ratingId}")
+    public Rating findBook(@PathVariable Long ratingId) {
+        return ratingService.findRatingById(ratingId);
     }
 
     @PostMapping
