@@ -1,6 +1,7 @@
 package com.springcloud.client_ratings;
 
 import com.springcloud.client_ratings.entities.Rating;
+import com.springcloud.client_ratings.repositories.RatingMessageRepository;
 import io.restassured.RestAssured;
 import io.restassured.authentication.FormAuthConfig;
 import io.restassured.config.RedirectConfig;
@@ -9,6 +10,7 @@ import io.restassured.response.Response;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 
@@ -16,7 +18,8 @@ import static io.restassured.RestAssured.given;
 
 @SpringBootTest
 class ClientRatingsApplicationTests {
-
+    @Autowired
+    private RatingMessageRepository ratingMessageRepository;
     private final String ROOT_URI = "http://localhost:8084";
     private FormAuthConfig formConfig
             = new FormAuthConfig("/login", "username", "password");
@@ -48,6 +51,20 @@ class ClientRatingsApplicationTests {
         Assert.assertEquals(HttpStatus.OK.value(), ratingResponse.getStatusCode());
         Assert.assertEquals(rating.getBookId(), result.getBookId());
         Assert.assertEquals(rating.getStars(), result.getStars());
+    }
+
+    @Test
+    public void whenAddNewRating_thenRatingMessage() {
+        Rating rating = new Rating(1L, 4);
+        Response ratingResponse = RestAssured.given().auth()
+                .form("admin", "admin", formConfig).and()
+                .contentType(ContentType.JSON)
+                .body(rating)
+                .post(ROOT_URI + "/rating-service/ratings");
+        String message = rating.niceToString()+" created";
+
+        Assert.assertEquals(HttpStatus.OK.value(), ratingResponse.getStatusCode());
+        Assert.assertEquals(message, ratingMessageRepository.getById(1).getMessage());
     }
 
     @Test

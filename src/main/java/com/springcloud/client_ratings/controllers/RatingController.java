@@ -1,7 +1,9 @@
 package com.springcloud.client_ratings.controllers;
 
 import com.springcloud.client_ratings.entities.Rating;
+import com.springcloud.client_ratings.entities.RatingMessage;
 import com.springcloud.client_ratings.kafka.KafkaProducerConfig;
+import com.springcloud.client_ratings.repositories.RatingMessageRepository;
 import com.springcloud.client_ratings.services.RatingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -21,6 +23,8 @@ import java.util.Map;
 public class RatingController {
     @Autowired
     private RatingService ratingService;
+    @Autowired
+    private RatingMessageRepository ratingMessageRepository;
     @Autowired
     private KafkaProducerConfig kafkaProducerConfig;
     private Map<LocalDateTime, String> messageList= new HashMap<>();
@@ -64,14 +68,22 @@ public class RatingController {
 
     @PostMapping
     public Rating createRating(@RequestBody Rating rating) {
-        kafkaProducerConfig.sendMessage(rating.niceToString()+" created", "post-ratings");
+        String message = rating.niceToString()+" created";
+        RatingMessage dbMessage = new RatingMessage(LocalDateTime.now(), "POST", message);
+        ratingMessageRepository.save(dbMessage);
+
+        kafkaProducerConfig.sendMessage(message, "post-ratings");
         return ratingService.createRating(rating);
     }
 
     @DeleteMapping("/{ratingId}")
     public void deleteRating(@PathVariable Long ratingId) {
         Rating rating = ratingService.findRatingById(ratingId);
-        kafkaProducerConfig.sendMessage(rating.niceToString()+" deleted", "delete-ratings");
+        String message = rating.niceToString()+" deleted";
+        RatingMessage dbMessage = new RatingMessage(LocalDateTime.now(), "POST", message);
+        ratingMessageRepository.save(dbMessage);
+
+        kafkaProducerConfig.sendMessage(message, "delete-ratings");
         ratingService.deleteRating(ratingId);
     }
 
@@ -79,16 +91,22 @@ public class RatingController {
     public Rating updateRating(@RequestBody Rating rating, @PathVariable Long ratingId) {
         Rating oldRating = ratingService.findRatingById(ratingId);
         Rating newRating = ratingService.updateRating(rating, ratingId);
-        kafkaProducerConfig.sendMessage(oldRating.niceToString()+
-                " updated to "+newRating.niceToString(), "put-ratings");
+        String message = oldRating.niceToString()+" updated to "+newRating.niceToString();
+        RatingMessage dbMessage = new RatingMessage(LocalDateTime.now(), "POST", message);
+        ratingMessageRepository.save(dbMessage);
+
+        kafkaProducerConfig.sendMessage(message, "put-ratings");
         return newRating;
     }
 
     @PatchMapping("/{ratingId}")
     public Rating updateRating(@RequestBody Map<String, String> updates, @PathVariable Long ratingId) {
         Rating rating = ratingService.findRatingById(ratingId);
-        kafkaProducerConfig.sendMessage(rating.niceToString()+
-                " updated with "+updates, "patch-ratings");
+        String message = rating.niceToString()+" updated with "+updates;
+        RatingMessage dbMessage = new RatingMessage(LocalDateTime.now(), "POST", message);
+        ratingMessageRepository.save(dbMessage);
+
+        kafkaProducerConfig.sendMessage(message, "patch-ratings");
         updates.forEach((k, v) -> {
             Field field = ReflectionUtils.findField(Rating.class, k);
             ReflectionUtils.setField(field, rating, v);
