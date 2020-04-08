@@ -25,22 +25,22 @@ public class RatingController {
     private KafkaProducerConfig kafkaProducerConfig;
     private Map<LocalDateTime, String> messageList= new HashMap<>();
 
-    @KafkaListener(topics = "post", groupId = "ratings")
+    @KafkaListener(topics = "post-ratings", groupId = "ratings")
     public void listenToMsgsPost(String message) {
         messageList.put(LocalDateTime.now(), "POST: "+message);
     }
 
-    @KafkaListener(topics = "put", groupId = "ratings")
+    @KafkaListener(topics = "put-ratings", groupId = "ratings")
     public void listenToMsgsPut(String message) {
         messageList.put(LocalDateTime.now(), "PUT: "+message);
     }
 
-    @KafkaListener(topics = "delete", groupId = "ratings")
+    @KafkaListener(topics = "delete-ratings", groupId = "ratings")
     public void listenToMsgsDel(String message) {
         messageList.put(LocalDateTime.now(), "DEL: "+message);
     }
 
-    @KafkaListener(topics = "patch", groupId = "ratings")
+    @KafkaListener(topics = "patch-ratings", groupId = "ratings")
     public void listenToMsgsPatch(String message) {
         messageList.put(LocalDateTime.now(), "PATCH: "+message);
     }
@@ -64,14 +64,14 @@ public class RatingController {
 
     @PostMapping
     public Rating createRating(@RequestBody Rating rating) {
-        kafkaProducerConfig.sendMessage(rating.niceToString()+" created", "post");
+        kafkaProducerConfig.sendMessage(rating.niceToString()+" created", "post-ratings");
         return ratingService.createRating(rating);
     }
 
     @DeleteMapping("/{ratingId}")
     public void deleteRating(@PathVariable Long ratingId) {
         Rating rating = ratingService.findRatingById(ratingId);
-        kafkaProducerConfig.sendMessage(rating.niceToString()+" deleted", "delete");
+        kafkaProducerConfig.sendMessage(rating.niceToString()+" deleted", "delete-ratings");
         ratingService.deleteRating(ratingId);
     }
 
@@ -79,14 +79,16 @@ public class RatingController {
     public Rating updateRating(@RequestBody Rating rating, @PathVariable Long ratingId) {
         Rating oldRating = ratingService.findRatingById(ratingId);
         Rating newRating = ratingService.updateRating(rating, ratingId);
-        kafkaProducerConfig.sendMessage(oldRating.niceToString()+" updated to "+newRating.niceToString(), "put");
+        kafkaProducerConfig.sendMessage(oldRating.niceToString()+
+                " updated to "+newRating.niceToString(), "put-ratings");
         return newRating;
     }
 
     @PatchMapping("/{ratingId}")
     public Rating updateRating(@RequestBody Map<String, String> updates, @PathVariable Long ratingId) {
         Rating rating = ratingService.findRatingById(ratingId);
-        kafkaProducerConfig.sendMessage(rating.niceToString()+" updated with "+updates, "patch");
+        kafkaProducerConfig.sendMessage(rating.niceToString()+
+                " updated with "+updates, "patch-ratings");
         updates.forEach((k, v) -> {
             Field field = ReflectionUtils.findField(Rating.class, k);
             ReflectionUtils.setField(field, rating, v);

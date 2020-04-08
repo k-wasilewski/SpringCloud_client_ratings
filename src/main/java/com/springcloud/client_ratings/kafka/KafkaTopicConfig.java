@@ -25,21 +25,21 @@ public class KafkaTopicConfig {
 
     @Bean
     public NewTopic postTopic() {
-        return new NewTopic("post", 1, (short) 1);
+        return new NewTopic("post-ratings", 1, (short) 1);
     }
 
     @Bean
     public NewTopic putTopic() {
-        return new NewTopic("put", 1, (short) 1);
+        return new NewTopic("put-ratings", 1, (short) 1);
     }
 
     @Bean
     public NewTopic patchTopic() {
-        return new NewTopic("patch", 1, (short) 1);
+        return new NewTopic("patch-ratings", 1, (short) 1);
     }
 
     @Bean
     public NewTopic deleteTopic() {
-        return new NewTopic("delete", 1, (short) 1);
+        return new NewTopic("delete-ratings", 1, (short) 1);
     }
 }

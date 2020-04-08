@@ -25,5 +25,5 @@ public class Rating {
     public int getStars() {return this.stars;}
     public void setStars(int stars) {this.stars=stars;}
 
-    public String niceToString() {return "book_id: "+this.bookId+" with "+this.stars+" stars";}
+    public String niceToString() {return "book with id "+this.bookId+" has "+this.stars+" stars";}
 }
