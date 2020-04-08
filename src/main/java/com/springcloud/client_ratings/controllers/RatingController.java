@@ -10,7 +10,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.awt.print.Book;
 import java.lang.reflect.Field;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -21,30 +23,30 @@ public class RatingController {
     private RatingService ratingService;
     @Autowired
     private KafkaProducerConfig kafkaProducerConfig;
-    private List<String> messageList= new ArrayList();
+    private Map<LocalDateTime, String> messageList= new HashMap<>();
 
     @KafkaListener(topics = "post", groupId = "ratings")
     public void listenToMsgsPost(String message) {
-        messageList.add("POST, "+message);
+        messageList.put(LocalDateTime.now(), "POST: "+message);
     }
 
     @KafkaListener(topics = "put", groupId = "ratings")
     public void listenToMsgsPut(String message) {
-        messageList.add("PUT, "+message);
+        messageList.put(LocalDateTime.now(), "PUT: "+message);
     }
 
     @KafkaListener(topics = "delete", groupId = "ratings")
     public void listenToMsgsDel(String message) {
-        messageList.add("DEL, "+message);
+        messageList.put(LocalDateTime.now(), "DEL: "+message);
     }
 
     @KafkaListener(topics = "patch", groupId = "ratings")
     public void listenToMsgsPatch(String message) {
-        messageList.add("PATCH, "+message);
+        messageList.put(LocalDateTime.now(), "PATCH: "+message);
     }
 
-    @GetMapping("/messages")
-    public List<String> getMessageList() { return this.messageList;}
+    @GetMapping(value = "/messages", produces = {"application/json"})
+    public Map<LocalDateTime, String> getMessageList() { return this.messageList;}
 
     @GetMapping
     public List<Rating> findRatingsByBookId(@RequestParam(required = false, defaultValue = "0") Long bookId) {
